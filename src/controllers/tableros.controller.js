@@ -71,3 +71,68 @@ export async function deleteTablero(req, res, next) {
     return next(err);
   }
 }
+// GET /api/tableros/:id
+export async function getTableroById(req, res, next) {
+  try {
+    const _id = new ObjectId(req.params.id);
+    const col = () => getDB().collection("tableros");
+
+    const tablero = await col().findOne({ _id });
+    if (!tablero) {
+      return res.status(404).json({
+        ok: false,
+        error: "NOT_FOUND",
+        message: "Tablero no encontrado",
+      });
+    }
+
+    return res.status(200).json({ ok: true, data: tablero });
+  } catch (err) {
+    return next(err);
+  }
+}
+// PUT || PATCH /api/tableros/:id
+export async function updateTablero(req, res, next) {
+  try {
+    const _id = new ObjectId(req.params.id);
+    const col = () => getDB().collection("tableros");
+
+    // Construir $set solo con lo que venga
+    const set = { updatedAt: new Date() };
+    if (typeof req.body.nombre === "string") set.nombre = req.body.nombre.trim();
+    if (typeof req.body.descripcion === "string") set.descripcion = req.body.descripcion.trim();
+    if (Array.isArray(req.body.miembros)) {
+      set.miembros = req.body.miembros.map((id) => new ObjectId(id));
+    }
+
+    // 1) Actualizar
+    const upd = await col().updateOne({ _id }, { $set: set });
+
+    // 2) Si no existe → 404
+    if (upd.matchedCount === 0) {
+      return res.status(404).json({ 
+        ok: false, 
+        error: "NOT_FOUND", 
+        message: "Tablero no encontrado" });
+    }
+
+    // 3) Leer documento actualizado y responder 200 con message
+    const updated = await col().findOne({ _id });
+    return res.status(200).json({
+      ok: true,
+      message: "Tablero actualizado correctamente",
+      data: updated,
+    });
+  } catch (err) {
+    // nombre duplicado (si tienes índice único por nombre)
+    if (err?.code === 11000) {
+      return res.status(409).json({
+        ok: false,
+        error: "DUPLICATE_KEY",
+        message: "El nombre de tablero ya existe",
+        key: "nombre",
+      });
+    }
+    return next(err);
+  }
+}

@@ -30,3 +30,35 @@ export const deleteTableroRules = [
         .isMongoId()
         .withMessage("El parámetro :id debe ser un ObjectId válido"),
 ];
+// Reglas para obtener tablero por Id
+export const getTableroByIdRules = [
+  param("id").trim().isMongoId().withMessage("El parámetro :id debe ser un ObjectId válido"),
+];
+// Reglas para actualizar tablero por Id
+export const updateTableroRules = [
+  param("id").trim().isMongoId().withMessage("El parámetro :id debe ser un ObjectId válido"),
+  body().custom((value, { req }) => {
+    if (!req.body || Object.keys(req.body).length === 0) {
+      throw new Error("Body vacío: envía al menos un campo a actualizar");
+    }
+    return true;
+  }),
+  body("nombre")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("nombre inválido"),
+  body("descripcion")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("descripcion inválida"),
+  body("miembros")
+    .optional()
+    .isArray({ min: 1 })
+    .withMessage("miembros debe ser un array de al menos un ObjectId"),
+  body("miembros.*")
+    .optional()
+    .isMongoId()
+    .withMessage("cada miembro debe ser un ObjectId válido"),
+];
