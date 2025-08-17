@@ -156,4 +156,84 @@ Respuesta:
 }
 ```
 **Nota:** La idea de noegocio y logica comprende el que se tiene muchos usuarios cualquiera puede crear un tablero y quedaria como responsable y agregaria colaboradores, 
-al crear una tarea tendra un colaborador asignao y se le asignara el Id el tablero para de esa maeja ir genstinando las tareas sus etsados y resposables.
+al crear una tarea tendra un colaborador asignao y se le asignara el Id el tablero para de esa manera ir gestionando las tareas sus estados y resposables.
+
+---
+
+## 🔗 Endpoints API
+
+Base URL: `http://localhost:5500/api`
+
+### 👤 Usuarios
+- **POST /usuarios**
+  - Crea un nuevo usuario.
+  - Body:
+    ```json
+    {
+      "nombre": "Brian Suarez",
+      "email": "brian@example.com"
+    }
+    ```
+  - Respuesta: `201 Created`
+    ```json
+    { "ok": true, "id": "66c21fae6a5b1d9b8a000001" }
+    ```
+
+- **GET /usuarios**
+  - Lista todos los usuarios.
+  - Respuesta:
+    ```json
+    {
+      "ok": true,
+      "data": [
+        { "_id": "...", "nombre": "Brian Suarez", "email": "brian@example.com" }
+      ]
+    }
+    ```
+
+---
+
+### 📋 Tableros
+- **POST /tableros**
+  - Crea un tablero con miembros.
+  - Body:
+    ```json
+    {
+      "nombre": "Web Pública",
+      "descripcion": "Tablero del sitio",
+      "miembros": ["66c21fae6a5b1d9b8a000001"]
+    }
+    ```
+  - Respuesta: `201 Created`
+
+- **GET /tableros**
+  - Lista todos los tableros.
+
+- **DELETE /tableros/:id**
+  - Elimina un tablero y **sus tareas asociadas** (borrado en cascada).
+  - Respuesta: `204 No Content`
+
+---
+
+### ✅ Tareas
+- **POST /tareas**
+  - Crea una tarea en un tablero y la asigna a un usuario.
+  - Body:
+    ```json
+    {
+      "titulo": "Diseñar logo",
+      "descripcion": "Propuesta inicial",
+      "fechaLimite": "2025-08-25",
+      "boardId": "66c2215f6a5b1d9b8a000100",
+      "responsableId": "66c21fae6a5b1d9b8a000001"
+    }
+    ```
+
+- **GET /tareas**
+  - Lista todas las tareas.
+
+- **DELETE /tareas/:id**
+  - Elimina una tarea específica.
+  - Respuesta: `204 No Content`
+
+---
