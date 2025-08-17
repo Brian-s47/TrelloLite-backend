@@ -81,3 +81,179 @@ Respuesta:
 ```bash
 "API corriendo correctamente"
 ```
+
+- **Diseño de dominio**
+
+### usuarios 
+
+**Propósito:** quién crea/asigna tareas.
+
+- `_id` (ObjectId)
+- `nombre` → (string, req)
+- `email` → (string, req, único)
+- `createdAt`, `updatedAt` → (Date)
+
+**Ejemplo:**
+```bash
+{
+  "_id": "66c21fae6a5b1d9b8a000001",
+  "nombre": "Brian Suarez",
+  "email": "brian@example.com",
+  "createdAt": "2025-08-15T00:00:00.000Z",
+  "updatedAt": "2025-08-15T00:00:00.000Z"
+}
+```
+---
+
+### tareas
+
+**Propósito:** Nucleo de trabajo lo que trata de gestionar la APP
+
+- `_id` (ObjectId)
+- `boardId` → referencia a tablero._id
+- `titulo` → (string, req)
+- `descripcion` → (string, req)
+- `fechaLimite` → (Date, req)
+- `responsableId` → referencia a usuario._id
+- `estado` (string enum: pendiente, en_progreso, completada; default: pendiente)
+- `createdAt`, `updatedAt`→ (Date)
+
+**Ejemplo:**
+```bash
+{
+  "_id": "66c2220a6a5b1d9b8a000120",
+  "boardId": "66c2215f6a5b1d9b8a000100",
+  "titulo": "Diseñar logo",
+  "descripcion": "Propuesta inicial",
+  "fechaLimite": "2025-08-25T00:00:00.000Z",
+  "responsableId": "66c21fae6a5b1d9b8a000001",
+  "estado": "pendiente",
+  "createdAt": "2025-08-15T12:15:00.000Z",
+  "updatedAt": "2025-08-15T12:15:00.000Z"
+}
+```
+---
+
+### tableros
+
+**Propósito:** agrupar tareas por proyecto/board (como Trello).
+
+- `_id` (MongoDB)
+- `nombre` → (req)
+- `descripcion` → (req)
+- `miembros` -> (array de userIds)
+- `createdAt`, `updatedAt`→ (Date)
+
+**Ejemplo:**
+```bash
+{
+  "_id": "66c2215f6a5b1d9b8a000100",
+  "nombre": "Web Pública",
+  "descripcion": "Tablero del sitio",
+  "miembros": ["66c21fae6a5b1d9b8a000001"],
+  "createdAt": "2025-08-15T12:05:00.000Z",
+  "updatedAt": "2025-08-15T12:05:00.000Z"
+}
+```
+**Nota:** La idea de noegocio y logica comprende el que se tiene muchos usuarios cualquiera puede crear un tablero y quedaria como responsable y agregaria colaboradores, 
+al crear una tarea tendra un colaborador asignao y se le asignara el Id el tablero para de esa manera ir gestionando las tareas sus estados y resposables.
+
+---
+
+## 🔗 Endpoints API
+
+Base URL: `http://localhost:5500/api`
+
+### 👤 Usuarios
+- **POST /usuarios**
+  - Crea un nuevo usuario.
+  - Body:
+    ```json
+    {
+      "nombre": "Brian Suarez",
+      "email": "brian@example.com"
+    }
+    ```
+  - Respuesta: `201 Created`
+    ```json
+    { "ok": true, "id": "66c21fae6a5b1d9b8a000001" }
+    ```
+
+- **GET /usuarios**
+  - Lista todos los usuarios.
+  - Respuesta:
+    ```json
+    {
+      "ok": true,
+      "data": [
+        { "_id": "...", "nombre": "Brian Suarez", "email": "brian@example.com" }
+      ]
+    }
+    ```
+- **PUT || POST /usuarios/:id**
+  - Actualizar un usuario por id
+  - Body:
+    ```json
+    {
+      "nombre": "Brian Suarez",
+    }
+    ```
+  - Respuesta:
+    ```json
+    {
+    }
+    ```
+- **DELETE /usuarios/:id**
+  - Eliminar un usuario por id
+  - Respuesta:
+    ```json
+    {
+    }
+    ```
+
+---
+
+### 📋 Tableros
+- **POST /tableros**
+  - Crea un tablero con miembros.
+  - Body:
+    ```json
+    {
+      "nombre": "Web Pública",
+      "descripcion": "Tablero del sitio",
+      "miembros": ["66c21fae6a5b1d9b8a000001"]
+    }
+    ```
+  - Respuesta: `201 Created`
+
+- **GET /tableros**
+  - Lista todos los tableros.
+
+- **DELETE /tableros/:id**
+  - Elimina un tablero y **sus tareas asociadas** (borrado en cascada).
+  - Respuesta: `204 No Content`
+
+---
+
+### ✅ Tareas
+- **POST /tareas**
+  - Crea una tarea en un tablero y la asigna a un usuario.
+  - Body:
+    ```json
+    {
+      "titulo": "Diseñar logo",
+      "descripcion": "Propuesta inicial",
+      "fechaLimite": "2025-08-25",
+      "boardId": "66c2215f6a5b1d9b8a000100",
+      "responsableId": "66c21fae6a5b1d9b8a000001"
+    }
+    ```
+
+- **GET /tareas**
+  - Lista todas las tareas.
+
+- **DELETE /tareas/:id**
+  - Elimina una tarea específica.
+  - Respuesta: `204 No Content`
+
+---
