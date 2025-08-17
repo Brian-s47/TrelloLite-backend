@@ -190,6 +190,26 @@ Base URL: `http://localhost:5500/api`
       ]
     }
     ```
+- **PUT || POST /usuarios/:id**
+  - Actualizar un usuario por id
+  - Body:
+    ```json
+    {
+      "nombre": "Brian Suarez",
+    }
+    ```
+  - Respuesta:
+    ```json
+    {
+    }
+    ```
+- **DELETE /usuarios/:id**
+  - Eliminar un usuario por id
+  - Respuesta:
+    ```json
+    {
+    }
+    ```
 
 ---
 
