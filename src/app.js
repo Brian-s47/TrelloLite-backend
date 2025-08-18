@@ -1,5 +1,6 @@
 // Zona de importacion de modulos 
 import express from "express"; // Libreria de express
+import cors from "cors"; // Solcuion de CORS = Cross-Origin Resource Sharing (Compartición de recursos entre orígenes).
 import usuariosRouter from './router/usuarios.routes.js'; // Rutas de clase usuarios
 import tablerosRouter from './router/tableros.routes.js'; // Rutas de clase tableros
 import tareasRouter from './router/tareas.router.js'; // Rutas de clase tareas
@@ -9,6 +10,8 @@ const app = express(); // Inicializacion de App con express
 
 // Middlewares de interpretacion de JSON
 app.use(express.json());
+// Habilita CORS para cualquier origen
+app.use(cors());
 
 // EndPoint de conexion con la API
 app.get("/api", (req, res) => {

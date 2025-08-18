@@ -1,7 +1,8 @@
 # 📌 TrelloLite - Backend
 
+
 **TrelloLite** es una aplicación web **Full Stack** para la gestión de tareas en equipos pequeños.  
-Permite crear, asignar y actualizar tareas con estados personalizados (`pendiente`, `en progreso`, `completada`).  
+Permite crear, asignar y actualizar tareas con estados personalizados (`pendiente`, `en_progreso`, `completada`).  
 
 Incluye:
 - Backend en **Node.js + Express** con **MongoDB** (Driver oficial).
@@ -12,20 +13,25 @@ Incluye:
 
 ---
 
+## 📂 Estructura de Carpetas
+
+
+---
+
 ## 📂 Estructura de Carpetas (fase inicial)
 ```
 TRELLOLITE-BACKEND/
 ├─ src/
-│ ├─ config/
-│ │ └─ db.js # Configuración y conexión a MongoDB (driver oficial)
-│ ├─ router/
-│ │ └─ test.routes.js # Endpoint temporal para probar conexión a la DB
-│ ├─ app.js # Configuración de Express y middlewares
-│ └─ server.js # Punto de entrada: conexión a DB y arranque del servidor
-├─ .env # Variables de entorno (no versionar)
-├─ .gitignore
+│ ├─ config/ # Configuración (DB, env)
+│ ├─ controllers/ # Lógica de negocio (usuarios, tableros, tareas)
+│ ├─ middlewares/ # Middlewares (errores, validaciones)
+│ ├─ models/ # Clases de dominio (Usuario, Tarea, Tablero)
+│ ├─ routes/ # Definición de endpoints
+│ ├─ utils/ # Helpers y respuestas estandarizadas
+│ ├─ app.js # Configuración de Express
+│ └─ server.js # Arranque del servidor
+├─ .env # Variables de entorno
 ├─ package.json
-├─ package-lock.json
 └─ README.md
 ```
 
@@ -38,6 +44,7 @@ TRELLOLITE-BACKEND/
 - [MongoDB Driver Oficial](https://www.mongodb.com/docs/drivers/node/current/) - Conexión y consultas a MongoDB
 - [Dotenv](https://github.com/motdotla/dotenv) - Manejo de variables de entorno
 - [Nodemon](https://nodemon.io/) - Recarga automática en desarrollo
+- [Cors](https://www.npmjs.com/package/cors) - Middleware para habilitar solicitudes desde distintos orígenes
 
 ---
 
@@ -45,8 +52,9 @@ TRELLOLITE-BACKEND/
 
 1. Clonar el repositorio:
 ```bash
-git clone <https://github.com/Brian-s47/TrelloLite-backend>
+git clone https://github.com/Brian-s47/TrelloLite-backend
 cd TrelloLite-backend
+
 ```
 2. Instalar dependencias:
 ```bash
@@ -72,10 +80,21 @@ npm start
 ```bash
 http://localhost:5500/api
 ```
-
+---
+🌍 CORS
 ✅ **Endpoints disponibles (fase inicial)**
+
+Se resolvió el problema de CORS (Cross-Origin Resource Sharing) utilizando el middleware oficial cors de Express:
 - Healthcheck
 
+```bash
+import cors from "cors";
+app.use(cors());
+
+```
+- Esto permite que el frontend (aunque se ejecute en otro puerto u origen, por ejemplo http://localhost:5173) pueda consumir la API sin restricciones.
+En caso de despliegue, se puede configurar para permitir solo dominios específicos.
+---
 GET /api
 Respuesta:
 ```bash
@@ -158,101 +177,67 @@ Respuesta:
 **Nota:** La idea de noegocio y logica comprende el que se tiene muchos usuarios cualquiera puede crear un tablero y quedaria como responsable y agregaria colaboradores, 
 al crear una tarea tendra un colaborador asignao y se le asignara el Id el tablero para de esa manera ir gestionando las tareas sus estados y resposables.
 
+- **🔗 Relaciones de dominio (ERD)**
+```bash
+    USUARIOS ||--o{ TABLEROS : crea
+    USUARIOS ||--o{ TAREAS : responsable
+    TABLEROS ||--o{ TAREAS : contiene
+
+    USUARIOS {
+      string _id
+      string nombre
+      string email
+      date createdAt
+      date updatedAt
+    }
+
+    TABLEROS {
+      string _id
+      string nombre
+      string descripcion
+      array miembros
+      date createdAt
+      date updatedAt
+    }
+
+    TAREAS {
+      string _id
+      string titulo
+      string descripcion
+      string estado
+      date fechaLimite
+      date createdAt
+      date updatedAt
+    }
+``` 
+---
+   📌 Respuestas estandarizadas
+
+Todas las respuestas siguen este formato uniforme:
+
+✅ Éxito:
+```bash
+{
+  "data": { ... },
+  "meta": { "total": 5 }
+}
+```
+```bash
+{
+  "error": "NOT_FOUND",
+  "message": "Usuario no encontrado"
+}
+```
 ---
 
-## 🔗 Endpoints API
+## 🔗 Documentacion API
 
-Base URL: `http://localhost:5500/api`
-
-### 👤 Usuarios
-
-- **GET /usuarios**
-  - Lista todos los usuarios.
-  - Respuesta:
-    ```json
-    {
-      "ok": true,
-      "data": [
-        { "_id": "...", "nombre": "Brian Suarez", "email": "brian@example.com" }
-      ]
-    }
-    ```
-- **POST /usuarios**
-  - Crea un nuevo usuario.
-  - Body:
-    ```json
-    {
-      "nombre": "Brian Suarez",
-      "email": "brian@example.com"
-    }
-    ```
-  - Respuesta: `201 Created`
-    ```json
-    { "ok": true, "id": "66c21fae6a5b1d9b8a000001" }
-    ```
-
-- **PUT || POST /usuarios/:id**
-  - Actualizar un usuario por id
-  - Body:
-    ```json
-    {
-      "nombre": "Brian Suarez",
-    }
-    ```
-  - Respuesta:
-    ```json
-    {
-    }
-    ```
-- **DELETE /usuarios/:id**
-  - Eliminar un usuario por id
-  - Respuesta:
-    ```json
-    {
-    }
-    ```
----
-### 📋 Tableros
-- **POST /tableros**
-  - Crea un tablero con miembros.
-  - Body:
-    ```json
-    {
-      "nombre": "Web Pública",
-      "descripcion": "Tablero del sitio",
-      "miembros": ["66c21fae6a5b1d9b8a000001"]
-    }
-    ```
-  - Respuesta: `201 Created`
-  
-- **GET /tableros**
-  - Lista todos los tableros.
-
-- **DELETE /tableros/:id**
-  - Elimina un tablero y **sus tareas asociadas** (borrado en cascada).
-  - Respuesta: `204 No Content`
+- Para ver toda la documentacion de la API ingrese al siguiente Link : <https://documenter.getpostman.com/view/27104424/2sB3BHnVGP>
 
 ---
+**🚀 Mejoras futuras**
 
-### ✅ Tareas
-- **POST /tareas**
-  - Crea una tarea en un tablero y la asigna a un usuario.
-  - Body:
-    ```json
-    {
-      "titulo": "Diseñar logo",
-      "descripcion": "Propuesta inicial",
-      "fechaLimite": "2025-08-25",
-      "boardId": "66c2215f6a5b1d9b8a000100",
-      "responsableId": "66c21fae6a5b1d9b8a000001"
-    }
-    ```
-
-- **GET /tareas**
-  - Lista todas las tareas.
-
-- **DELETE /tareas/:id**
-  - Elimina una tarea específica.
-  - Respuesta: `204 No Content`
-
----
+- Implementar autenticación con JWT.
+- Agregar roles de usuario (admin, miembro).
+- Filtrar tareas por estado/fecha límite.
+- Respuestas más detalladas en eliminaciones (delete).
