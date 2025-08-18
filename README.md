@@ -165,6 +165,18 @@ al crear una tarea tendra un colaborador asignao y se le asignara el Id el table
 Base URL: `http://localhost:5500/api`
 
 ### 👤 Usuarios
+
+- **GET /usuarios**
+  - Lista todos los usuarios.
+  - Respuesta:
+    ```json
+    {
+      "ok": true,
+      "data": [
+        { "_id": "...", "nombre": "Brian Suarez", "email": "brian@example.com" }
+      ]
+    }
+    ```
 - **POST /usuarios**
   - Crea un nuevo usuario.
   - Body:
@@ -179,17 +191,6 @@ Base URL: `http://localhost:5500/api`
     { "ok": true, "id": "66c21fae6a5b1d9b8a000001" }
     ```
 
-- **GET /usuarios**
-  - Lista todos los usuarios.
-  - Respuesta:
-    ```json
-    {
-      "ok": true,
-      "data": [
-        { "_id": "...", "nombre": "Brian Suarez", "email": "brian@example.com" }
-      ]
-    }
-    ```
 - **PUT || POST /usuarios/:id**
   - Actualizar un usuario por id
   - Body:
@@ -210,9 +211,7 @@ Base URL: `http://localhost:5500/api`
     {
     }
     ```
-
 ---
-
 ### 📋 Tableros
 - **POST /tableros**
   - Crea un tablero con miembros.
@@ -225,7 +224,7 @@ Base URL: `http://localhost:5500/api`
     }
     ```
   - Respuesta: `201 Created`
-
+  
 - **GET /tableros**
   - Lista todos los tableros.
 

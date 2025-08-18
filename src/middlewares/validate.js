@@ -1,5 +1,5 @@
 // Zona de importacion de modulos
-import { validationResult } from "express-validator"; // validacion de Body con espressvalidator
+import { validationResult } from "express-validator"; // validacion de Body con express-validator
 
 // Funcion de activacion de validadores con express-validator
 export function validate(req, res, next) {

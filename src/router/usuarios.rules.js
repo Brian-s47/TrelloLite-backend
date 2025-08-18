@@ -12,6 +12,7 @@ export const createUserRules = [
     // Validacion de atributo email
     body("email")
         .trim() // Sin espacion al inicio o final
+        .notEmpty() // no puede estar vacio
         .isEmail() // Tiene formato de correo
         .withMessage("email inválido"), // Mensaje si algo falla
 ];
@@ -19,16 +20,23 @@ export const createUserRules = [
 export const listUsersRules = [];
 // Reglas de mostrar un suuario por ID
 export const getUserByIdRules = [
-  param("id").trim().isMongoId().withMessage("El parámetro :id debe ser un ObjectId válido"),
+    param("id")
+        .trim()
+        .isMongoId()
+        .withMessage("El parámetro :id debe ser un ObjectId válido"),
 ];
 // Reglas para actualizar un usuario por ID
 export const updateUserRules = [
-    param("id").trim().isMongoId().withMessage("El parámetro :id debe ser un ObjectId válido"),
-    body().custom((value, { req }) => {
-    // Condicional de Body vacio
-    if (!req.body || Object.keys(req.body).length === 0) {
-        throw new Error("Body vacío: envía al menos un campo a actualizar");
-    }
+    param("id")
+        .trim() // Sin espacion al inicio o final
+        .isMongoId() // Valida que sea un tipo-> ObjectId
+        .withMessage("El parámetro :id debe ser un ObjectId válido"),
+    body()
+        .custom((value, { req }) => {
+        // Condicional de Body vacio
+        if (!req.body || Object.keys(req.body).length === 0) {
+            throw new Error("Body vacío: envía al menos un campo a actualizar");
+        }
     return true;
     }),
     body("nombre")
@@ -44,8 +52,8 @@ export const updateUserRules = [
 ];
 // Reglas para borrar un usuario por ID
 export const deleteUserRules = [
-  param("id")
-    .trim()
-    .isMongoId()
-    .withMessage("El parámetro :id debe ser un ObjectId válido"),
+    param("id")
+        .trim()
+        .isMongoId()
+        .withMessage("El parámetro :id debe ser un ObjectId válido"),
 ];

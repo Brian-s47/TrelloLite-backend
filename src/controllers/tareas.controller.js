@@ -2,14 +2,13 @@
 import { getDB } from "../config/db.js"; // Modulo para obtener DB
 import { Tarea } from "../models/tarea.model.js"; // Modulos de clase Tarea
 import { ObjectId } from "mongodb"; // Modulo para crar ID de mongoDB
+import { successResponse, createdResponse, noContentResponse, errorResponse } from "../utils/responses.js";
 // Obtener la coleccion de Tareas y la guardamos
 const col = () => getDB().collection("tareas");
 
 // POST /api/tareas
 export async function createTarea(req, res, next) {
   try {
-    // 1) capa HTTP ya validada por express-validator
-    // 2) capa de dominio
     const tarea = new Tarea({
       titulo: req.body.titulo,
       boardId: req.body.boardId,
@@ -19,9 +18,8 @@ export async function createTarea(req, res, next) {
       responsableId: req.body.responsableId,
     });
     tarea.validar();
-    // 3) persistencia
     const { insertedId } = await col().insertOne(tarea.toDocument());
-    return res.status(201).json({ ok: true, id: insertedId });
+    return createdResponse(res, { id: insertedId });
   } catch (err) {
     return next(err);
   }
@@ -30,7 +28,7 @@ export async function createTarea(req, res, next) {
 export async function listTareas(_req, res, next) {
   try {
     const tareas = await col().find().sort({ createdAt: -1 }).toArray();
-    return res.json({ ok: true, data: tareas });
+    return successResponse(res, tareas, { total: tareas.length });
   } catch (err) {
     return next(err);
   }
@@ -42,21 +40,14 @@ export async function deleteTarea(req, res, next) {
 
     const tarea = await col().findOne({ _id });
     if (!tarea) {
-      return res.status(404).json({
-        ok: false,
-        error: "NOT_FOUND",
-        message: "Tarea no encontrada",
-      });
+      return errorResponse(res, "Tarea no encontrada", 404, "NOT_FOUND");
     }
 
     const { deletedCount } = await col().deleteOne({ _id });
-    if (deletedCount === 1) return res.status(204).send();
-
-    return res.status(500).json({
-      ok: false,
-      error: "DELETE_FAILED",
-      message: "No se pudo eliminar la tarea.",
-    });
+    if (deletedCount === 1) {
+      return noContentResponse(res);
+    }
+    return errorResponse(res, "No se pudo eliminar la tarea", 500, "DELETE_FAILED");
   } catch (err) {
     return next(err);
   }
@@ -67,9 +58,9 @@ export async function getTareaById(req, res, next) {
     const _id = new ObjectId(req.params.id);
     const tarea = await col().findOne({ _id });
     if (!tarea) {
-      return res.status(404).json({ ok: false, error: "NOT_FOUND", message: "Tarea no encontrada" });
+      return errorResponse(res, "Tarea no encontrada", 404, "NOT_FOUND");
     }
-    return res.status(200).json({ ok: true, data: tarea });
+    return successResponse(res, tarea);
   } catch (err) {
     return next(err);
   }
@@ -79,36 +70,32 @@ export async function updateEstadoTarea(req, res, next) {
   try {
     const _id = new ObjectId(req.params.id);
     const nueva = req.body.estado;
-    console.log(nueva, req.body, req.params.id);
-    // 1) Buscar la tarea
     const tarea = await col().findOne({ _id });
     if (!tarea) {
-      return res.status(404).json({ 
-        ok: false, 
-        error: "NOT_FOUND", 
-        message: "Tarea no encontrada" });
+      return errorResponse(res, "Tarea no encontrada", 404, "NOT_FOUND");
     }
 
-    // 2) Validar transición
     const orden = ["pendiente", "en_progreso", "completada"];
     const idxActual = orden.indexOf(tarea.estado);
     const idxNueva = orden.indexOf(nueva);
+
     if (idxNueva !== idxActual + 1) {
-      return res.status(400).json({
-        ok: false,
-        error: "INVALID_TRANSITION",
-        message: `Transición inválida: ${tarea.estado} -> ${nueva}`,
-      });
+      return errorResponse(
+        res,
+        `Transición inválida: ${tarea.estado} -> ${nueva}`,
+        400,
+        "INVALID_TRANSITION"
+      );
     }
 
-    // 3) Actualizar
     const { value: updated } = await col().findOneAndUpdate(
       { _id },
       { $set: { estado: nueva, updatedAt: new Date() } },
       { returnDocument: "after" }
     );
 
-    return res.json({ ok: true, data: updated });
+  return successResponse(res, updated);
+
   } catch (err) {
     return next(err);
   }
@@ -119,7 +106,7 @@ export async function updateTarea(req, res, next) {
     const _id = new ObjectId(req.params.id);
     const tareaDB = await col().findOne({ _id });
     if (!tareaDB) {
-      return res.status(404).json({ ok: false, error: "NOT_FOUND", message: "Tarea no encontrada" });
+      return errorResponse(res, "Tarea no encontrada", 404, "NOT_FOUND");
     }
 
     // 1) Merge: doc actual + cambios del body (sin permitir 'estado' aquí)
@@ -145,11 +132,11 @@ export async function updateTarea(req, res, next) {
 
     const upd = await col().updateOne({ _id }, { $set: safeSet });
     if (upd.matchedCount === 0) {
-      return res.status(404).json({ ok: false, error: "NOT_FOUND", message: "Tarea no encontrada" });
+      return errorResponse(res, "Tarea no encontrada", 404, "NOT_FOUND");
     }
 
     const updated = await col().findOne({ _id });
-    return res.status(200).json({ ok: true, message: "Tarea actualizada correctamente", data: updated });
+    return successResponse(res, updated, null, 200);
   } catch (err) {
     return next(err);
   }
