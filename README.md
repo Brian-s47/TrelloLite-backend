@@ -241,3 +241,11 @@ Todas las respuestas siguen este formato uniforme:
 - Agregar roles de usuario (admin, miembro).
 - Filtrar tareas por estado/fecha límite.
 - Respuestas más detalladas en eliminaciones (delete).
+
+## 🔗 Video Presentacion
+
+https://drive.google.com/file/d/1BVwBS-Fgn5bDtKWMwC67Wh52D8k8X1ZG/view?usp=sharing
+
+## 🔗 Repositorio Frontend
+
+https://github.com/Brian-s47/trellolite-frontend
